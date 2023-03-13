@@ -6,6 +6,8 @@ package it.polito.tdp.IndovinaNumero;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.IndovinaNumero.model.Gioco;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -15,13 +17,8 @@ import javafx.scene.control.ProgressBar;
 
 public class FXMLController {
 	
+	private Gioco model;
 	
-	private int TMax;
-	private int NMax;
-	private int NTentativiFatti;
-	private int numeroSegreto;
-	
-
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
 
@@ -57,25 +54,13 @@ public class FXMLController {
 
     @FXML
     void doNuovaPartita(ActionEvent event) {
-    	//inizializzare variabili del gioco
-    	this.NTentativiFatti = 0;
-    	this.numeroSegreto = (int)(Math.random()*this.NMax) + 1;
-    	try {
-    		this.TMax = Integer.parseInt(this.txtTMax.getText());
-    	}catch(NumberFormatException e) {
-    		this.txtCom.setText("TMax deve eseere un numero!");
-    	}
     	
-    	try {
-    		this.NMax = Integer.parseInt(this.txtNMax.getText());
-    	}catch(NumberFormatException e) {
-    		this.txtCom.setText("NMax deve eseere un numero!");
-    	}
-    	
+    	this.model.IniziaGioco();
+     	
     	//scrivere informazioni utente
-    	this.txtTentativi.setText( Integer.toString(this.TMax-this.NTentativiFatti) );
-    	this.txtNMax.setText(Integer.toString(this.NMax) );
-    	this.txtTMax.setText(Integer.toString(this.TMax));
+    	this.txtTentativi.setText( Integer.toString(this.model.getTMax()-this.model.getNTentativiFatti()) );
+    	this.txtNMax.setText(Integer.toString(this.model.getNMax()) );
+    	this.txtTMax.setText(Integer.toString(this.model.getTMax()));
 //    	this.txtRisultato.setText(Integer.toString(numeroSegreto));
     	
     	this.btnPRova.setDisable(false);
@@ -102,32 +87,38 @@ public class FXMLController {
     	//fare controlli sul numero
     	
     	//incrementare numero tentativi fatti
-    	this.NTentativiFatti++;
     	
-    	this.txtTentativi.setText( Integer.toString(this.TMax-this.NTentativiFatti) );
-    	this.barTentativi.setProgress((double) this.NTentativiFatti / this.TMax);
     	
-    	//giocare
-    	if (guess == this.numeroSegreto) {
-    		this.txtRisultato.appendText("Hai vinto. Il numero segreto era " + this.numeroSegreto + "\n");
+    	int risultato = this.model.faiTentativo(guess);
+    	
+    	this.txtTentativi.setText( Integer.toString(this.model.getTMax()-this.model.getNTentativiFatti()) );
+    	this.barTentativi.setProgress((double) this.model.getNTentativiFatti() / this.model.getTMax());
+    	
+    	//aggiornare interfaccia grafica con lo stato del gioco 
+    	if (risultato == 0) {
+    		this.txtRisultato.appendText("Hai vinto. Il numero segreto era " + this.model.getNumeroSegreto() + "\n");
     		this.btnPRova.setDisable(true);
     		return;
     	}
     	
-    	if (this.NTentativiFatti == this.TMax) {
-    		this.txtRisultato.appendText("Hai perso. Il numero segreto era " + this.numeroSegreto + "\n");
+    	if (risultato == 1) {
+    		this.txtRisultato.appendText("Hai perso. Il numero segreto era " + this.model.getNumeroSegreto() + "\n");
     		this.btnPRova.setDisable(true);
     		return;
     	}
     	
-    	if(guess>this.numeroSegreto) {
+    	if(risultato == 2) {
     		this.txtRisultato.appendText("Numero troppo alto\n");
     	}else  {
-    		this.txtRisultato.appendText("Numero tropo basso\n");
+    		this.txtRisultato.appendText("Numero troppo basso\n");
     	}
     	
     	
     	
+    }
+    
+    public void setModel(Gioco model) {
+    	this.model = model;
     }
     
     
